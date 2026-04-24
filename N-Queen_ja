@@ -1,0 +1,51 @@
+class Solution {
+
+    private String[] rows;
+
+    private void precompute(int n) {
+        rows = new String[n];
+        for (int col = 0; col < n; col++)
+            rows[col] = ".".repeat(col) + "Q" + ".".repeat(n-col-1);
+    }
+
+    public List<List<String>> solveNQueens(int n) {
+        precompute(n);
+        return nQueens(n, n, List.of(List.of())).stream()
+            .map(sol -> toBoard(sol))
+            .collect(Collectors.toList());
+    }
+
+    public List<List<Integer>> nQueens(int n, int remaining, List<List<Integer>> partialSol) {
+        if (remaining == 0) return partialSol;
+        return nQueens(n, remaining - 1,
+            partialSol.stream()
+                .flatMap(sol -> extend(n, sol).stream())
+                .collect(Collectors.toList()));
+    }
+
+    public List<List<Integer>> extend(int n, List<Integer> partial) {
+        List<List<Integer>> allSols = new ArrayList<>();
+        for (int col = 0; col < n; col++) {
+            if (valid(partial, col)) {
+                List<Integer> sol = new ArrayList<>(partial);
+                sol.add(col);
+                allSols.add(sol);
+            }
+        }
+        return allSols;
+    }
+
+    public boolean valid(List<Integer> partial, int col) {
+        for (int offset = 1; offset <= partial.size(); offset++) {
+            int c = partial.get(partial.size() - offset);
+            if (c == col || c == col - offset || c == col + offset) return false;
+        }
+        return true;
+    }
+
+    public List<String> toBoard(List<Integer> sol) {
+        return sol.stream()
+            .map(col -> rows[col])
+            .collect(Collectors.toList());
+    }
+}
